@@ -1,23 +1,24 @@
 from tkinter import *
 import mysql.connector
 import tkinter as tk
-from tkinter import messagebox
-import time
+from tkinter import messagebox, simpledialog
+from datetime import datetime
 
-time1 = ''
 
-root = tk.Tk()
 
-mydb= mysql.connector.connect(user="tamsynsteed", password="@Lifechoices314", database="", host="127.0.0.1", auth_plugin="mysql_native_password")
+
+
+
+mydb= mysql.connector.connect(user="tamsynsteed", password="@Lifechoices314", database="lifechoicesonline", host="127.0.0.1", auth_plugin="mysql_native_password")
 #connect database
 
 mycursor=mydb.cursor()
 
-#create function thats pulls all data from Login table in the hospital database
+#create fucntion that checks if input is in the users table
 def verify():
-    user_verification= Username.get()
+    user_verification= username.get()
     pass_verification = password.get()
-    sql = "select * from users where username = %s and password = %s"
+    sql = "select * from users where user_name = %s and password = %s"
     mycursor.execute(sql,[(user_verification), (pass_verification)])
     results = mycursor.fetchall()
     if results:
@@ -27,46 +28,126 @@ def verify():
     else:
             failed()
 
-def logged():
-    messagebox.showinfo("Login successful", "Verified!")
+now = datetime.now()  #display the current time
+
+current_time = now.strftime("%H:%M:%S")
+print("Current Time =", current_time)
+x = datetime.now()
+
+def logged():  #if loggin details are correct, insert the username and times into the logged table
+    x = datetime.now()
+    y = x.strftime("%H:%M")
+    myuser=simpledialog.askstring("Input", "Please re-enter username ", parent=mywindow)
+    exe = "INSERT INTO logged VALUES (%s, curtime(), NULL)"
+    mycursor.execute(exe, [myuser])
+    mydb.commit()
+    messagebox.showinfo("Successful", "You have successfully logged in")
 
 
+
+    window = tk.Tk()  #create window that displays the logged in user and sign out button
+
+    window.title('Logged In')
+
+    window.geometry("450x450")
+    window.configure(background="black")
+
+    lbluser=tk.Label(window, text="Life Choices Online: Logged in", bg="cadet blue")
+    lbluser.pack(pady=10)
+
+    lbluser=tk.Label(window, text="You are currently LOGGED IN as:\n\n"+ username.get(), bg="grey")
+    lbluser.pack(pady=10)
+
+    regbuttn=tk.Button(window,text="Sign Out", command=sign_out)
+    regbuttn.pack(pady=60)
+
+
+
+    window.mainloop()
+
+
+
+
+
+
+
+#if the login input is not in the user table, show an error
 def failed():
     messagebox.showerror("Login failed", "Please check your username and password.")
 
+#import the register window
+def register():
+    mywindow.withdraw()
+    import register
 
-root.title('Login Page')
 
-root.geometry("450x450")
-root.configure(background="black")
+#sign out of the login. sign out time will be inserted into the logged in table
+def sign_out():
+    x = datetime.now()
+    y = x.strftime("%H:%M")
+    MsgBox = tk.messagebox.askquestion ('Sign Out','Are you sure you want to sign out?',icon = 'warning')
+    if MsgBox == 'yes':
 
-lbluser=tk.Label(root, text="Life Choices Online: Log in", bg="cadet blue")
+       x = datetime.now()
+       y = x.strftime("%H:%M")
+       myuser=simpledialog.askstring("Input", "Please re-enter username ", parent=mywindow)
+       exe = "UPDATE logged SET time_out = curtime()where user_name=%s"
+       mycursor.execute(exe, [myuser])
+       mydb.commit()
+
+
+       messagebox.showinfo("Signed Out", "You have successfully signed out")
+       window.withdraw()
+       import loginpage
+
+
+    else:
+        tk.messagebox.showinfo('Return','You will now return to the application screen')
+
+
+
+
+
+
+
+mywindow = tk.Tk()
+
+mywindow.title('Login Page')
+
+mywindow.geometry("450x450")
+mywindow.configure(background="black")
+
+lbluser=tk.Label(mywindow, text="Life Choices Online: Log in", bg="cadet blue")
 lbluser.pack(pady=10)
 
-
-lbluser=tk.Label(root, text="Enter Username")
+#created labels and entry boxes for the input
+lbluser=tk.Label(mywindow, text="Enter Username")
 lbluser.place(x=50, y=100)
 
-Username= tk.Entry(root, width=30)
-Username.place(x=165,y=100)
+username= tk.Entry(mywindow, width=30)
+username.place(x=165,y=100)
 
-lblpasswd=tk.Label(root,text="Enter Password")
+lblpasswd=tk.Label(mywindow,text="Enter Password")
 lblpasswd.place(x=50, y=140)
 
-password = tk.Entry(root,width=30)
+password = tk.Entry(mywindow,width=30)
 password.place(x=165, y=140)
 
-logbuttn=tk.Button(root,text="Login", command=verify)
+logbuttn=tk.Button(mywindow,text="Sign In", command=verify)
 logbuttn.place(x=145,y=200)
 
-regbuttn=tk.Button(root,text="Register")
+regbuttn=tk.Button(mywindow,text="Register", command=register)
 regbuttn.place(x=220,y=200)
+
+lblpasswd=tk.Label(mywindow,text="Press 'control a' to login as admin user")
+lblpasswd.place(x=100, y=400)
+
 
 
 import time
 
 time1 = ''
-clock = Label(root, font=('times', 18, 'bold'), )
+clock = Label(mywindow, font=('times', 18, 'bold'), )
 clock.pack(pady=10)
 
 def tick():
@@ -83,8 +164,16 @@ def tick():
     clock.after(200, tick)
 tick()
 
+keyspressed=""
+def key():
+    global keyspressed
+    mywindow.destroy()
+    import admin_login
+
+mywindow.bind("<Control-a>",lambda x: key())
 
 
 
 
-root.mainloop()
+
+mywindow.mainloop()

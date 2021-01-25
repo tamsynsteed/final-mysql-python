@@ -2,6 +2,7 @@ from tkinter import *
 import mysql.connector
 import tkinter as tk
 from tkinter import messagebox
+import datetime
 
 root = tk.Tk()
 
@@ -15,6 +16,9 @@ mydb= mysql.connector.connect(user="tamsynsteed", password="@Lifechoices314", da
 #connect database
 mycursor=mydb.cursor()
 
+x = datetime.datetime.now()
+
+#this function allows a new user to register , data is inserted into the users table
 def insert():
 
     fullname= fullname1.get()
@@ -24,8 +28,7 @@ def insert():
     mobile1 =mobile.get()
     
     sql = "INSERT INTO users (full_name, user_name, password, mobile_number, status, date_joined) VALUES (%s, %s, %s, %s,%s,%s)"
-    val = (fullname, username1,password1,str(status1))
-
+    val = (fullname, username1,password1,mobile1,str(status1),x)
 
     mycursor.execute(sql, val)
 
@@ -36,6 +39,9 @@ def insert():
     root.withdraw()
     import loginpage
 
+def back():
+    root.withdraw()
+    import loginpage
 
 
 lbluser=tk.Label(root, text="Welcome to LIfe Choices Online", bg="cadet blue", font="22")
@@ -80,10 +86,13 @@ choices = {'Visitor','Student','Employee'}
 tkvar.set('Student') # set the default option
 
 popupMenu = OptionMenu(root, tkvar, *choices)
-popupMenu.place(x=195, y=320)
+popupMenu.place(x=205, y=320)
 
-logbuttn=tk.Button(root,text="Register", command=insert)
-logbuttn.place(x=180, y=420)
+logbuttn=tk.Button(root,text="Submit", command=insert)
+logbuttn.place(x=215, y=420)
+
+logbuttn=tk.Button(root,text="Back to login", command=back)
+logbuttn.place(x=195, y=460)
 
 
 
